@@ -17,7 +17,13 @@ export function App() {
 
   return (
     <main>
-      <OrderForm token={token} onCreated={(order) => setOrders((prev) => [order, ...prev])} />
+      <OrderForm
+        token={token}
+        onCreated={(order) => {
+          orders.unshift(order);
+          setOrders(orders);
+        }}
+      />
       <h2>My orders</h2>
       <OrdersList orders={orders} />
     </main>
