@@ -18,6 +18,18 @@ describe('POST /orders', () => {
     expect(res.body.items).toHaveLength(2);
   });
 
+    it('charges 115 cents for one $1.15 item', async () => {
+    const { token } = await createUser();
+    const filter = await createProduct({ name: 'Filter', priceCents: 115, stock: 50 });
+
+    const res = await api()
+      .post('/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: filter.id, quantity: 1 }] });
+
+    expect(res.body.totalCents).toBe(115);
+  });
+
   it('decrements stock', async () => {
     const { token } = await createUser();
     const mug = await createProduct({ stock: 5 });

@@ -21,9 +21,7 @@ export async function createOrder(userId: number, items: CreateOrderItem[]): Pro
       return { productId: item.productId, quantity: item.quantity, unitPriceCents: product.priceCents };
     });
 
-    // The storefront shows prices in dollars, so compute the total the same way.
-    const total = lines.reduce((sum, l) => sum + (l.unitPriceCents / 100) * l.quantity, 0);
-    const totalCents = Math.floor(total * 100);
+    const totalCents = lines.reduce((sum, l) => sum + l.unitPriceCents * l.quantity, 0);
     const order = await ordersRepo.insertOrder(tx, userId, totalCents);
 
     for (const line of lines) {
