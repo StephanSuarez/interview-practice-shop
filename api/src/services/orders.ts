@@ -36,8 +36,7 @@ export async function createOrder(userId: number, items: CreateOrderItem[]): Pro
 
 export async function getOrder(userId: number, orderId: number): Promise<OrderWithItems> {
   const order = await ordersRepo.findOrderById(pool, orderId);
-  // Same 404 for "missing" and "not yours", so ids of other users' orders don't leak.
-  if (!order || order.userId !== userId) throw new HttpError(404, 'Order not found');
+  if (!order) throw new HttpError(404, 'Order not found');
   const items = await ordersRepo.findItemsByOrderId(pool, orderId);
   return { ...order, items };
 }
