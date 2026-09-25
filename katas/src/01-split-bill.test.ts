@@ -14,5 +14,6 @@ describe('splitBill', () => {
     expect(() => splitBill(100, 0)).toThrow(RangeError);
     expect(() => splitBill(10.5, 2)).toThrow(RangeError);
     expect(() => splitBill(-1, 2)).toThrow(RangeError);
+    expect(() => splitBill(0,0)).toThrow(RangeError);
   });
 });
