@@ -19,4 +19,6 @@ describe('transition', () => {
   });
 
   it('treats the same status as a no-op', () => expect(transition('paid', 'paid')).toBe('paid'));
+
+  it('peding with peding', () => expect(transition("pending", "pending")).toBe('pending'))
 });

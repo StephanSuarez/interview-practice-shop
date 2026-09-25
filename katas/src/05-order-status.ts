@@ -11,5 +11,25 @@ export type OrderStatus = 'pending' | 'paid' | 'failed' | 'cancelled';
  * Moving to the same status is a no-op and returns it (webhooks can repeat).
  */
 export function transition(current: OrderStatus, next: OrderStatus): OrderStatus {
-  throw new Error('Not implemented');
+
+
+  const allowed: Record<OrderStatus, OrderStatus[]> = {
+    'pending': ['paid', 'failed', 'cancelled'],
+    'failed': ['paid'],
+    'paid': [],
+    'cancelled': []
+  }
+
+  // movin to the same status is a no-op, return it
+  if(current===next){
+    return current;
+  }
+
+  // validar allowed
+  if(allowed[current] && allowed[current].includes(next)){
+    return next
+  }
+  
+  // cualquier otra transacccion es invalida
+  throw new Error(`Invalid transition: ${current} -> ${next}`);
 }
