@@ -10,5 +10,18 @@ export interface WebhookEvent {
  * Must be O(n), not O(n²).
  */
 export function dedupeEvents(events: WebhookEvent[]): WebhookEvent[] {
-  throw new Error('Not implemented');
+
+  const clearEvents: WebhookEvent[] = [];
+  const set: Set<string> = new Set();
+
+  for(const e of events){
+    const eventId: string = e.id.toString()
+    
+    if(!set.has(e.id)){
+      set.add(e.id)
+      clearEvents.push(e)
+    }
+  }
+  
+  return clearEvents;
 }
