@@ -64,16 +64,25 @@ export async function findItemsByOrderId(db: Db, orderId: number): Promise<Order
   }));
 }
 
-export async function updateOrderStatus(db: Db, id: number, status: OrderStatus): Promise<void> {
-  await db.query('UPDATE orders SET status = $2 WHERE id = $1', [id, status]);
+/** Only updates when the current status is in `from`; the check and the write are one atomic UPDATE. */
+export async function updateOrderStatus(
+  db: Db,
+  id: number,
+  status: OrderStatus,
+  from: OrderStatus[],
+): Promise<void> {
+  await db.query('UPDATE orders SET status = $2 WHERE id = $1 AND status = ANY($3)', [id, status, from]);
 }
 
+/** Returns false when this provider event was already recorded. */
 export async function insertPayment(
   db: Db,
   p: { orderId: number; providerEventId: string; status: string; amountCents: number },
-): Promise<void> {
-  await db.query(
-    'INSERT INTO payments (order_id, provider_event_id, status, amount_cents) VALUES ($1, $2, $3, $4)',
+): Promise<boolean> {
+  const { rowCount } = await db.query(
+    `INSERT INTO payments (order_id, provider_event_id, status, amount_cents) VALUES ($1, $2, $3, $4)
+     ON CONFLICT (provider_event_id) DO NOTHING`,
     [p.orderId, p.providerEventId, p.status, p.amountCents],
   );
+  return rowCount === 1;
 }
