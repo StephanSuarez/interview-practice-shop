@@ -29,6 +29,6 @@ ordersRouter.get('/:id', async (req, res) => {
 
 ordersRouter.post('/', async (req, res) => {
   const { items } = createOrderSchema.parse(req.body);
-  const order = orders.createOrder(req.user!.id, items);
+  const order = await orders.createOrder(req.user!.id, items);
   res.status(201).json(order);
 });
