@@ -11,5 +11,16 @@ export async function retry<T>(
   fn: () => Promise<T>,
   options: { attempts: number; baseDelayMs: number; shouldRetry?: (error: unknown) => boolean },
 ): Promise<T> {
-  throw new Error('Not implemented');
+  // reintentar promesa con timeout
+  let lastError: unknown
+  for(let i=0; i< options.attempts; i++){
+    try{
+      const result = await fn();
+      return result
+    }catch(e){
+      
+    }
+  } 
+
+  throw lastError
 }
