@@ -100,4 +100,16 @@ describe('GET /orders/:id', () => {
     expect((await api().get('/orders/999').set('Authorization', `Bearer ${token}`)).status).toBe(404);
     expect((await api().get('/orders/abc').set('Authorization', `Bearer ${token}`)).status).toBe(400);
   });
+
+  it('returns 401 if order not belong to user', async () => {
+    const { token } = await createUser();
+    const { token: tokenUserTwo } = await createUser('anatow@shop.test', 'secret123');
+    const mug = await createProduct({ priceCents: 500 });
+    const created = await api()
+      .post('/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: [{ productId: mug.id, quantity: 3 }] });
+
+    expect((await api().get(`/orders/${created.body.id}`).set('Authorization', `Bearer ${tokenUserTwo}`)).status).toBe(403);
+  });
 });

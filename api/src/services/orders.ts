@@ -37,6 +37,7 @@ export async function createOrder(userId: number, items: CreateOrderItem[]): Pro
 export async function getOrder(userId: number, orderId: number): Promise<OrderWithItems> {
   const order = await ordersRepo.findOrderById(pool, orderId);
   if (!order) throw new HttpError(404, 'Order not found');
+  if (userId !== order.userId) throw new HttpError(403, 'Order does not belong to you');
   const items = await ordersRepo.findItemsByOrderId(pool, orderId);
   return { ...order, items };
 }
