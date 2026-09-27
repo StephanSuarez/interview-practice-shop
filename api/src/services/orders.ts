@@ -1,4 +1,4 @@
-import { pool } from '../db';
+import { pool, withTransaction } from '../db';
 import { HttpError } from '../errors';
 import * as ordersRepo from '../repos/orders';
 import * as productsRepo from '../repos/products';
@@ -21,15 +21,19 @@ export async function createOrder(userId: number, items: CreateOrderItem[]): Pro
   });
 
   const totalCents = lines.reduce((sum, l) => sum + l.unitPriceCents * l.quantity, 0);
-  const order = await ordersRepo.insertOrder(pool, userId, totalCents);
 
-  for (const line of lines) {
-    const reserved = await productsRepo.decrementStock(pool, line.productId, line.quantity);
-    if (!reserved) throw new HttpError(409, `Product ${line.productId} is out of stock`);
-    await ordersRepo.insertOrderItem(pool, order.id, line);
-  }
+  // One transaction: an out-of-stock line rolls back the order, its items and every stock decrement.
+  return withTransaction(async (tx) => {
+    const order = await ordersRepo.insertOrder(tx, userId, totalCents);
 
-  return { ...order, items: lines };
+    for (const line of lines) {
+      const reserved = await productsRepo.decrementStock(tx, line.productId, line.quantity);
+      if (!reserved) throw new HttpError(409, `Product ${line.productId} is out of stock`);
+      await ordersRepo.insertOrderItem(tx, order.id, line);
+    }
+
+    return { ...order, items: lines };
+  });
 }
 
 export async function getOrder(userId: number, orderId: number): Promise<OrderWithItems> {

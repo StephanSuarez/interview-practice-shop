@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pool } from '../src/db';
-import { api, createProduct, createUser } from './helpers';
+import { api, count, createProduct, createUser } from './helpers';
 
 describe('POST /orders', () => {
   it('creates an order and computes the total in cents', async () => {
@@ -41,6 +41,28 @@ describe('POST /orders', () => {
       .send({ items: [{ productId: mug.id, quantity: 2 }] });
 
     expect(res.status).toBe(409);
+  });
+
+  it('leaves no order and no stock change when the last product is out of stock', async () => {
+    const { token } = await createUser();
+    const products = [
+      await createProduct({ name: 'Mug', stock: 5 }),
+      await createProduct({ name: 'Filter', stock: 8 }),
+      await createProduct({ name: 'Grinder', stock: 0 }),
+    ];
+
+    const res = await api()
+      .post('/orders')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ items: products.map((p) => ({ productId: p.id, quantity: 1 })) });
+    expect(res.status).toBe(409);
+
+    const list = await api().get('/orders').set('Authorization', `Bearer ${token}`);
+    expect(list.body).toHaveLength(0);
+    expect(await count('order_items')).toBe(0);
+
+    const { rows } = await pool.query('SELECT id, stock FROM products ORDER BY id');
+    expect(rows).toEqual(products.map((p) => ({ id: p.id, stock: p.stock })));
   });
 
   it('returns 404 for an unknown product', async () => {
