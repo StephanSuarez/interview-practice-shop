@@ -8,5 +8,27 @@
  *   is not a non-negative integer.
  */
 export function splitBill(totalCents: number, people: number): number[] {
-  throw new Error('Not implemented');
+  if (!Number.isInteger(totalCents) || totalCents < 0) {
+    throw new RangeError("total cents must be a positive integer")
+  }
+
+  if (!Number.isInteger(people) || people <= 0) {
+    throw new RangeError("people must be a non-negative number")
+  }
+
+  const countSplited: number[] = []
+
+  const base: number = Math.floor(totalCents / people)
+  let leftover: number = totalCents % people
+
+  for (let i = 0; i < people; i++) {
+    let valToAdd = base
+    if (leftover > 0) {
+      valToAdd += 1
+      leftover--
+    }
+    countSplited.push(valToAdd);
+  }
+
+  return countSplited;
 }
