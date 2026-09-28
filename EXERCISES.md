@@ -47,4 +47,4 @@ You must be able to explain every line it writes.
 
 ## Manual coding
 
-`katas/` — 8 small functions, no AI. See `katas/README.md`.
+`katas/` — 11 small functions (01–08, 10–12), no AI. See `katas/README.md`.
