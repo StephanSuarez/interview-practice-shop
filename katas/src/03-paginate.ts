@@ -14,5 +14,25 @@ export interface Page<T> {
  * - Throw a RangeError if `page` or `pageSize` is not a positive integer.
  */
 export function paginate<T>(items: T[], page: number, pageSize: number): Page<T> {
-  throw new Error('Not implemented');
+  if (!Number.isInteger(page) || page <= 0) {
+    console.log(page)
+    throw new RangeError("page must be a positive integer")
+  }
+
+  if (!Number.isInteger(pageSize) || pageSize <= 0) {
+    throw new RangeError("pageSize must be a positive integer")
+  }
+
+  const start: number = (page-1)*pageSize
+  const end: number = start+pageSize // confirm if end > total 
+
+  const pagination: Page<T> = {
+    items: items.slice(start, end),
+    page,
+    pageSize,
+    total: items.length,
+    totalPages: Math.ceil(items.length/pageSize)
+  }
+
+  return pagination
 }
