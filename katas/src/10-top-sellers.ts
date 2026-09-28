@@ -5,7 +5,7 @@ export interface OrderLine {
 
 export interface Order {
   id: number;
-  status: 'pending' | 'paid' | 'cancelled';
+  status: "pending" | "paid" | "cancelled";
   items: OrderLine[];
 }
 
@@ -18,6 +18,26 @@ export interface Order {
  *   On a tie, order by sku alphabetically (A before B).
  * - If there are fewer than `n` SKUs, return all of them. If `n` <= 0, return [].
  */
-export function topSellers(orders: Order[], n: number): { sku: string; quantity: number }[] {
-  throw new Error('Not implemented');
+export function topSellers(
+  orders: Order[],
+  n: number,
+): { sku: string; quantity: number }[] {
+  // get all paid orders
+  const paidOrders = orders.filter((order) => order.status === "paid");
+
+  // get all items from paid orders
+  const items = paidOrders.flatMap((order) => order.items);
+
+  // count the quantity of each item
+  const itemCounts = items.reduce((acc, item) => {
+    (acc as Record<string, number>)[item.sku] = ((acc as Record<string, number>)[item.sku] || 0) + item.quantity;
+    return acc;
+  }, {});
+
+  // sort the items by quantity and then by sku alphabetically if the quantity is the same
+  const sortedItems = Object.entries(itemCounts as Record<string, number>).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+
+  // return the top n items
+  return sortedItems.slice(0, n).map(([sku, quantity]) => ({ sku, quantity: quantity as number }));
+
 }
